@@ -1,4 +1,4 @@
-# 🛣️ Road Damage Detection using YOLOv8
+# 🛣️ Road Damage Detection using YOLOv10
 
 An AI-powered computer vision system for detecting and classifying road damages such as potholes and cracks using the YOLOv10 object detection framework.
 
