@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from werkzeug.utils import secure_filename
 from ultralytics import YOLO
 import os
 import uuid
@@ -7,17 +6,18 @@ import uuid
 app = Flask(__name__)
 app.secret_key = 'secretkey'
 
+# Upload and Result folders
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['RESULT_FOLDER'] = 'static/results'
+
+# Create folders if not exist
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(app.config['RESULT_FOLDER'], exist_ok=True)
 
 # Load YOLO model
 model = YOLO('best.pt')
 
-# Ensure folders exist
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-os.makedirs(app.config['RESULT_FOLDER'], exist_ok=True)
-
-# Dummy user database (use SQLite or other DB for production)
+# Dummy user database
 users = {}
 
 # HOME PAGE
@@ -32,13 +32,15 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+
         if username in users and users[username] == password:
             session['user'] = username
             flash('Login successful!', 'success')
-            return redirect(url_for('index'))  # Redirect to detection page
+            return redirect(url_for('index'))
         else:
             flash('Invalid credentials', 'danger')
             return redirect(url_for('login'))
+
     return render_template('login.html')
 
 # REGISTER PAGE
@@ -48,15 +50,19 @@ def register():
         username = request.form['username']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
+
         if password != confirm_password:
             flash("Passwords do not match", 'danger')
             return redirect(url_for('register'))
+
         if username in users:
             flash("Username already exists", 'danger')
             return redirect(url_for('register'))
+
         users[username] = password
-        flash("Registration successful. Please log in.", 'success')
+        flash("Registration successful. Please login.", 'success')
         return redirect(url_for('login'))
+
     return render_template('register.html')
 
 # LOGOUT
@@ -66,6 +72,7 @@ def logout():
     flash("Logged out successfully", 'info')
     return redirect(url_for('home'))
 
+# ABOUT PAGE
 @app.route('/about')
 def about():
     return render_template('about.html')
@@ -73,54 +80,72 @@ def about():
 # DETECTION PAGE
 @app.route('/index', methods=['GET', 'POST'])
 def index():
+
     if 'user' not in session:
-        flash("Please login to access detection", "warning")
+        flash("Please login first", "warning")
         return redirect(url_for('login'))
 
     if request.method == 'POST':
+
         if 'image' not in request.files:
-            flash('No image file selected', 'warning')
+            flash('No image uploaded', 'warning')
             return redirect(request.url)
+
         file = request.files['image']
+
         if file.filename == '':
             flash('No image selected', 'warning')
             return redirect(request.url)
 
-        if file:
-            filename = str(uuid.uuid4()) + ".jpg"
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
+        # Generate unique filename
+        filename = str(uuid.uuid4()) + ".jpg"
 
-            results = model(filepath)
-            result_image_path = os.path.join(app.config['RESULT_FOLDER'], filename)
-            results[0].save(filename=result_image_path)
+        upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-            prediction_data = results[0].boxes.data.cpu().numpy()
-            classes = results[0].names
-            parsed_preds = []
+        # Save uploaded image
+        file.save(upload_path)
 
-            for pred in prediction_data:
-                x1, y1, x2, y2, conf, cls = pred
-                parsed_preds.append({
-                    "class": classes[int(cls)],
-                    "confidence": round(float(conf) * 100, 2)
-                })
+        # YOLO prediction
+        results = model(upload_path)
 
-            return render_template("index.html", uploaded=True,
-                                   original=url_for('static', filename='uploads/' + filename),
-                                   result=url_for('static', filename='results/' + filename),
-                                   predictions=parsed_preds)
+        # Save result image
+        result_path = os.path.join(app.config['RESULT_FOLDER'], filename)
+        results[0].save(filename=result_path)
+
+        # Extract predictions
+        prediction_data = results[0].boxes.data.cpu().numpy()
+        classes = results[0].names
+
+        parsed_predictions = []
+
+        for pred in prediction_data:
+            x1, y1, x2, y2, conf, cls = pred
+
+            parsed_predictions.append({
+                "class": classes[int(cls)],
+                "confidence": round(float(conf) * 100, 2)
+            })
+
+        return render_template(
+            "index.html",
+            uploaded=True,
+            original=url_for('static', filename='uploads/' + filename),
+            result=url_for('static', filename='results/' + filename),
+            predictions=parsed_predictions
+        )
 
     return render_template("index.html", uploaded=False)
 
+# CHARTS PAGE
 @app.route('/charts')
 def charts():
     return render_template('charts.html')
 
+# PERFORMANCE PAGE
 @app.route('/performance')
 def performance():
     return render_template('performance.html')
 
-# RUN
+# RUN APP
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
