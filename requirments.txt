@@ -1,0 +1,9 @@
+# python==3.8
+# conda create -n project python=3.8 -y
+#activate project
+
+matplotlib==3.7.5
+pillow==10.4.0
+ultralytics==8.3.200
+scipy==1.10.1
+#pip install -r requirments.txt

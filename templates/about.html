@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>About YOLO - RoadDamage AI</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+margin:0;
+font-family:'Inter',sans-serif;
+background:#020617;
+color:white;
+overflow-x:hidden;
+cursor:none;
+}
+
+/* CANVAS */
+#gridCanvas{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+z-index:-2;
+}
+
+/* CURSOR */
+.cursor{
+position:fixed;
+width:200px;
+height:200px;
+border-radius:50%;
+background:radial-gradient(circle, rgba(250,204,21,0.25), transparent 70%);
+pointer-events:none;
+transform:translate(-50%,-50%);
+z-index:999;
+}
+
+/* NAVBAR */
+.navbar{
+background:rgba(255,255,255,0.07);
+backdrop-filter:blur(16px);
+border-bottom:1px solid rgba(255,255,255,0.12);
+}
+
+.navbar-brand{
+color:#facc15 !important;
+font-weight:800;
+}
+
+/* HERO */
+.hero{
+padding:140px 0 100px;
+text-align:center;
+}
+
+.hero h1{
+font-size:3.2rem;
+font-weight:800;
+margin-bottom:20px;
+}
+
+/* TEXT */
+.text-secondary{
+color:#e2e8f0 !important;
+font-size:1.08rem;
+line-height:1.9;
+}
+
+/* HEADINGS */
+.highlight{
+background:linear-gradient(90deg,#facc15,#fde047,#facc15);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+/* CARDS */
+.glass{
+background:rgba(255,255,255,0.07);
+backdrop-filter:blur(18px);
+border-radius:22px;
+padding:40px;
+border:1px solid rgba(255,255,255,0.12);
+transition:.4s;
+margin-bottom:20px;
+}
+
+.glass:hover{
+transform:translateY(-8px) scale(1.02);
+box-shadow:0 0 60px rgba(250,204,21,.25);
+}
+
+/* SECTION */
+.section{
+padding:110px 0;
+}
+
+/* STEP */
+.step{
+text-align:center;
+padding:30px;
+}
+
+/* BUTTON */
+.btn-premium{
+background:linear-gradient(135deg,#facc15,#fde047);
+color:black;
+border:none;
+border-radius:12px;
+padding:12px 25px;
+font-weight:600;
+}
+
+/* FOOTER */
+.footer{
+text-align:center;
+padding:50px;
+color:#cbd5e1;
+margin-top:60px;
+}
+
+/* SCROLL ANIMATION */
+.fade{
+opacity:0;
+transform:translateY(40px);
+transition:all 0.8s ease;
+}
+
+.fade.show{
+opacity:1;
+transform:translateY(0);
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="gridCanvas"></canvas>
+<div class="cursor" id="cursor"></div>
+
+<!-- ✅ FIXED NAVBAR -->
+<nav class="navbar navbar-expand-lg fade">
+<div class="container">
+<a class="navbar-brand" href="{{ url_for('home') }}">🚧 Road Damage Detection</a>
+
+<div class="ms-auto">
+     <a href="{{ url_for('home') }}" class="btn btn-outline-light me-2">home
+     </a>
+
+<a href="{{ url_for('index') }}" class="btn btn-outline-light me-2">Detection</a>
+<a href="{{ url_for('charts') }}" class="btn btn-outline-light me-2">Charts</a>
+<a href="{{ url_for('performance') }}" class="btn btn-outline-light">Performance</a>
+<a href="{{ url_for('logout') }}" class="btn btn-outline-light me-2">Logout</a>
+
+</div>
+</div>
+</nav>
+
+<div class="container hero fade">
+<p class="text-secondary">AI Technology Behind the System</p>
+<h1 class="highlight">Understanding YOLO & Our System</h1>
+<p class="mt-3 text-secondary" style="max-width:700px;margin:auto;">
+Explore how YOLO powers real-time road damage detection and how this system helps in smart infrastructure monitoring.
+</p>
+</div>
+
+<div class="container section fade">
+<div class="glass">
+<h3 class="highlight mb-3">🧠 About YOLO (You Only Look Once)</h3>
+
+<p class="text-secondary">
+YOLO (You Only Look Once) is a powerful deep learning algorithm used for real-time object detection.
+Unlike traditional techniques, YOLO processes the entire image in a single pass through a neural network,
+making it extremely fast and efficient.
+</p>
+
+<p class="text-secondary">
+The model divides the image into a grid and predicts bounding boxes along with class probabilities
+for each grid cell. This allows YOLO to detect multiple objects in a single image simultaneously
+with high accuracy.
+</p>
+
+<p class="text-secondary">
+Due to its speed and performance, YOLO is widely used in applications such as autonomous driving,
+surveillance systems, traffic monitoring, and smart city solutions.
+</p>
+
+<ul class="text-secondary mt-3">
+<li>Single-pass detection (high speed)</li>
+<li>Multiple object detection</li>
+<li>Bounding boxes with confidence scores</li>
+<li>Real-time performance</li>
+</ul>
+</div>
+</div>
+
+<div class="container section text-center fade">
+<h2 class="highlight mb-5">How YOLO Works</h2>
+
+<div class="row g-4">
+<div class="col-md-3 fade"><div class="glass step"><h5>📸 Input Image</h5><p class="text-secondary">Upload road image</p></div></div>
+<div class="col-md-3 fade"><div class="glass step"><h5>🧠 Grid Division</h5><p class="text-secondary">Image split into grids</p></div></div>
+<div class="col-md-3 fade"><div class="glass step"><h5>📦 Bounding Boxes</h5><p class="text-secondary">Objects detected</p></div></div>
+<div class="col-md-3 fade"><div class="glass step"><h5>📊 Output</h5><p class="text-secondary">Damage classified</p></div></div>
+</div>
+</div>
+
+<div class="container section fade">
+<div class="glass">
+<h3 class="highlight mb-3">🚧 About Road Damage Detection System</h3>
+
+<p class="text-secondary">
+The Road Damage Detection System is an AI-based web application developed to automatically
+identify road surface damages such as potholes and cracks using computer vision.
+</p>
+
+<p class="text-secondary">
+Users can upload images of roads through the interface. These images are processed using
+a YOLO-based deep learning model trained on road damage datasets. The system detects
+damaged regions and highlights them using bounding boxes.
+</p>
+
+<p class="text-secondary">
+Each detected object is labeled with its class and confidence score, providing clear
+and accurate insights into road conditions.
+</p>
+
+<p class="text-secondary">
+The backend is implemented using Flask, which handles model inference and image processing,
+while the frontend ensures a smooth and interactive user experience.
+</p>
+
+<p class="text-secondary">
+This system can be used in smart cities, road maintenance systems, and automated monitoring
+solutions to improve efficiency and reduce manual inspection efforts.
+</p>
+
+<ul class="text-secondary mt-3">
+<li>Upload road images</li>
+<li>Detect potholes and cracks</li>
+<li>Display bounding boxes</li>
+<li>Show confidence scores</li>
+<li>Scalable AI system</li>
+</ul>
+</div>
+</div>
+
+<div class="container text-center section fade">
+<h3 class="highlight">Try the Detection System</h3>
+<a href="{{ url_for('index') }}" class="btn btn-premium mt-3">🚀 Start Detection</a>
+</div>
+
+<div class="footer fade">
+© 2026 RoadDamage AI | YOLO & Project Overview
+</div>
+
+<script>
+// SCROLL ANIMATION
+const observer = new IntersectionObserver(entries => {
+entries.forEach(entry => {
+if(entry.isIntersecting) entry.target.classList.add('show');
+});
+});
+document.querySelectorAll('.fade').forEach(el => observer.observe(el));
+
+// CURSOR
+const cursor = document.getElementById("cursor");
+document.addEventListener("mousemove", e => {
+cursor.style.left = e.clientX + "px";
+cursor.style.top = e.clientY + "px";
+});
+
+// GRID + CLICK WAVES
+const canvas = document.getElementById("gridCanvas");
+const ctx = canvas.getContext("2d");
+
+let gridSize = 50;
+let trail = [];
+let waves = [];
+
+function resize(){
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+document.addEventListener("mousemove", e => {
+const x = Math.floor(e.clientX / gridSize);
+const y = Math.floor(e.clientY / gridSize);
+trail.unshift({x,y});
+if(trail.length > 20) trail.pop();
+});
+
+// CLICK WAVE
+document.addEventListener("click", e => {
+waves.push({
+x: e.clientX,
+y: e.clientY,
+radius: 0,
+alpha: 1
+});
+});
+
+function draw(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+// grid
+ctx.strokeStyle = "rgba(255,255,255,0.06)";
+for(let x=0;x<canvas.width;x+=gridSize){
+ctx.beginPath();
+ctx.moveTo(x,0);
+ctx.lineTo(x,canvas.height);
+ctx.stroke();
+}
+for(let y=0;y<canvas.height;y+=gridSize){
+ctx.beginPath();
+ctx.moveTo(0,y);
+ctx.lineTo(canvas.width,y);
+ctx.stroke();
+}
+
+// trail glow
+trail.forEach((cell,i)=>{
+const alpha = 1 - i/20;
+ctx.fillStyle = `rgba(250,204,21,${alpha})`;
+ctx.shadowBlur = 20;
+ctx.shadowColor = "#facc15";
+ctx.fillRect(cell.x*gridSize,cell.y*gridSize,gridSize,gridSize);
+});
+
+// waves
+waves.forEach((wave, i)=>{
+wave.radius += 3;
+wave.alpha -= 0.01;
+
+ctx.beginPath();
+ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI*2);
+ctx.strokeStyle = `rgba(250,204,21,${wave.alpha})`;
+ctx.lineWidth = 2;
+ctx.stroke();
+
+if(wave.alpha <= 0) waves.splice(i,1);
+});
+
+requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+</body>
+</html>

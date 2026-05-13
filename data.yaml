@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 6
+names: ['Lubang', 'Melintang', 'Memanjang', 'Pinggir', 'Retak Buaya', 'Sambungan']
+
+roboflow:
+  workspace: tugas-xogo7
+  project: jalanrusak-zofhk
+  version: 6
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/tugas-xogo7/jalanrusak-zofhk/dataset/6

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Performance - Road Damage Detection</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+
+/* ===== GLOBAL ===== */
+body{
+  margin:0;
+  font-family:'Inter',sans-serif;
+  background:#020617;
+  color:white;
+  overflow-x:hidden;
+}
+
+/* ⭐ STARFIELD CANVAS */
+#starfield{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  z-index:-3;
+}
+
+/* ===== GRID OVERLAY ===== */
+body::before{
+  content:"";
+  position:fixed;
+  width:100%;
+  height:100%;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size:40px 40px;
+  z-index:-2;
+}
+
+/* ⭐ SUBTLE YELLOW GLOW (THEME MATCH) */
+body::after{
+  content:"";
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(250,204,21,0.08), transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(250,204,21,0.05), transparent 50%);
+  z-index:-1;
+}
+
+/* ===== NAVBAR ===== */
+.navbar{
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+/* ===== HEADINGS ===== */
+h2{
+  color:#facc15;
+  font-weight:800;
+}
+
+/* ===== CARD ===== */
+.card{
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(16px);
+  border-radius:20px;
+  padding:20px;
+  border:1px solid rgba(255,255,255,0.08);
+  transition:.3s;
+  text-align:center;
+}
+
+.card:hover{
+  transform:translateY(-8px);
+  box-shadow:0 0 35px rgba(250,204,21,.25);
+}
+
+.card h5{
+  color:rgba(255,255,255,0.75);
+  font-size:0.95rem;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  margin-bottom:5px;
+}
+
+.card h3{
+  color:#facc15;
+  font-weight:800;
+  font-size:2.2rem;
+}
+
+/* ===== TABLE ===== */
+.table{
+  border-radius:15px;
+  overflow:hidden;
+}
+
+thead{
+  background:linear-gradient(90deg,#facc15,#fde047);
+  color:black;
+  font-weight:600;
+}
+
+.perf-row{
+  background:rgba(255,255,255,0.04);
+  backdrop-filter:blur(10px);
+  transition:.3s;
+}
+
+.perf-row:hover{
+  transform:scale(1.02);
+  background:rgba(250,204,21,0.12);
+  box-shadow:0 0 20px rgba(250,204,21,.3);
+}
+
+/* ===== BADGES ===== */
+.badge{
+  font-weight:600;
+  padding:6px 10px;
+  border-radius:8px;
+}
+
+/* ===== SPACING ===== */
+.section{
+  padding:80px 0;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ⭐ STARFIELD CANVAS -->
+<canvas id="starfield"></canvas>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">🚧 Road Damage Detection</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Home</a></li>
+        <li class="nav-item">
+        <a class="nav-link text-white" href="{{ url_for('about') }}">About</a>
+      </li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Detection</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('charts') }}">Charts</a></li>
+        <li class="nav-item"><a class="nav-link active" href="{{ url_for('performance') }}">Performance</a></li>
+        {% if 'user' in session %}
+          <li class="nav-item"><a class="btn btn-danger ms-2" href="{{ url_for('logout') }}">Logout</a></li>
+        {% else %}
+          <li class="nav-item"><a class="btn btn-outline-light ms-2" href="{{ url_for('login') }}">Login</a></li>
+          <li class="nav-item"><a class="btn btn-warning ms-2" href="{{ url_for('register') }}">Register</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="container section">
+
+  <h2 class="mb-4">Model Performance</h2>
+
+  <div class="row g-4">
+    <div class="col-md-3"><div class="card"><h5>Precision</h5><h3>0.863</h3></div></div>
+    <div class="col-md-3"><div class="card"><h5>Recall</h5><h3>0.814</h3></div></div>
+    <div class="col-md-3"><div class="card"><h5>mAP@50</h5><h3>0.996</h3></div></div>
+    <div class="col-md-3"><div class="card"><h5>mAP@50-95</h5><h3>0.894</h3></div></div>
+  </div>
+
+  <div class="mt-5">
+    <h2 class="mb-4">Per-Class Performance</h2>
+
+    <table class="table table-dark table-hover align-middle text-center">
+      <thead>
+        <tr>
+          <th>Class</th><th>Precision</th><th>Recall</th><th>mAP@50</th><th>mAP@50-95</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr class="perf-row"><td><span class="badge bg-warning text-dark">Pothole</span></td><td>0.904</td><td>0.842</td><td>0.930</td><td>0.630</td></tr>
+        <tr class="perf-row"><td><span class="badge bg-info text-dark">Transverse Crack</span></td><td>0.808</td><td>0.764</td><td>0.855</td><td>0.552</td></tr>
+        <tr class="perf-row"><td><span class="badge bg-primary">Longitudinal Crack</span></td><td>0.800</td><td>0.773</td><td>0.830</td><td>0.570</td></tr>
+        <tr class="perf-row"><td><span class="badge bg-success">Edge Crack</span></td><td>0.940</td><td>0.817</td><td>0.915</td><td>0.613</td></tr>
+        <tr class="perf-row"><td><span class="badge bg-danger">Alligator Crack</span></td><td>0.868</td><td>0.870</td><td>0.927</td><td>0.670</td></tr>
+        <tr class="perf-row"><td><span class="badge bg-secondary">Joint Crack</span></td><td>0.856</td><td>0.817</td><td>0.921</td><td>0.767</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ⭐ STARFIELD SCRIPT -->
+<script>
+const canvas = document.getElementById("starfield");
+const ctx = canvas.getContext("2d");
+
+let stars = [];
+const STAR_COUNT = 350;
+const SPEED = 0.4;
+const MAX_DEPTH = 1200;
+
+function resize(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+function createStar(){
+  return {
+    x: (Math.random() - 0.5) * canvas.width * 2,
+    y: (Math.random() - 0.5) * canvas.height * 2,
+    z: Math.random() * MAX_DEPTH
+  };
+}
+
+for(let i=0;i<STAR_COUNT;i++) stars.push(createStar());
+
+function animate(){
+  ctx.fillStyle = "rgba(2,6,23,0.3)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  const cx = canvas.width/2;
+  const cy = canvas.height/2;
+
+  stars.forEach(star=>{
+    star.z -= SPEED;
+
+    if(star.z <= 0){
+      Object.assign(star, createStar());
+      star.z = MAX_DEPTH;
+    }
+
+    const scale = 400 / star.z;
+    const x = cx + star.x * scale;
+    const y = cy + star.y * scale;
+
+    const size = (1 - star.z/MAX_DEPTH) * 2;
+
+    ctx.beginPath();
+    ctx.arc(x,y,size,0,Math.PI*2);
+
+    ctx.fillStyle = "#facc15"; // ⭐ theme color
+    ctx.globalAlpha = 0.6;
+    ctx.fill();
+  });
+
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>

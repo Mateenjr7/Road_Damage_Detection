@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Road Damage Detection</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+  <style>
+
+    body{
+      margin:0;
+      font-family:'Inter',sans-serif;
+      color:white;
+      overflow-x:hidden;
+      background-color:#020617;
+      cursor:none;
+    }
+
+    #gridCanvas{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      z-index:-2;
+    }
+
+    /* 🔥 DIMMED CURSOR */
+    .cursor{
+      position:fixed;
+      width:140px;
+      height:140px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(250,204,21,0.05), transparent 80%);
+      pointer-events:none;
+      transform:translate(-50%,-50%);
+      z-index:999;
+    }
+
+    .bg-glow{
+      position:fixed;
+      width:100%;
+      height:100%;
+      top:0;
+      left:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,0,80,0.15), transparent 40%),
+        radial-gradient(circle at 80% 30%, rgba(255,0,80,0.12), transparent 40%);
+      z-index:-1;
+    }
+
+    body::after{
+      content:"";
+      position:fixed;
+      width:100%;
+      height:100%;
+      top:0;
+      left:0;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.04), transparent 60%);
+      pointer-events:none;
+      z-index:-1;
+    }
+
+    .navbar{
+      background:rgba(255,255,255,0.05);
+      backdrop-filter:blur(14px);
+      border-bottom:1px solid rgba(255,255,255,0.08);
+    }
+
+    .navbar-brand{
+      color:#facc15 !important;
+      font-weight:800;
+    }
+
+    .btn-detect{
+      background:linear-gradient(135deg,#facc15,#fde047);
+      color:black;
+      border:none;
+      border-radius:12px;
+      padding:10px 20px;
+      font-weight:600;
+      transition:.3s;
+    }
+
+    .btn-detect:hover{
+      transform:translateY(-3px);
+      box-shadow:0 0 20px rgba(250,204,21,.6);
+    }
+
+    .card-road{
+      background:rgba(255,255,255,0.05);
+      backdrop-filter:blur(16px);
+      border-radius:20px;
+      padding:20px;
+      border:1px solid rgba(255,255,255,0.08);
+      transition:.3s;
+    }
+
+    .card-road:hover{
+      transform:translateY(-6px);
+      box-shadow:0 0 30px rgba(250,204,21,.25);
+    }
+
+    img{
+      max-height:350px;
+      border-radius:12px;
+      margin-top:10px;
+      width:100%;
+      object-fit:contain;
+    }
+
+    .form-control{
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1);
+      color:white;
+      border-radius:12px;
+    }
+
+    .form-control:focus{
+      background:rgba(255,255,255,0.08);
+      border-color:#facc15;
+      box-shadow:0 0 10px rgba(250,204,21,.3);
+      color:white;
+    }
+
+    .progress{
+      height:10px;
+      border-radius:10px;
+      background:#111827;
+    }
+
+    .progress-bar{
+      background:linear-gradient(90deg,#facc15,#fde047);
+    }
+
+    .badge-detect{
+      background:#facc15;
+      color:black;
+      font-weight:600;
+      border-radius:8px;
+      padding:5px 10px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<canvas id="gridCanvas"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="bg-glow"></div>
+
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('home') }}">🚧 Road Damage Detection</a>
+
+    <ul class="navbar-nav ms-auto">
+      <li class="nav-item">
+        <a class="nav-link text-white" href="{{ url_for('about') }}">About</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="{{ url_for('index') }}">Detection</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="{{ url_for('charts') }}">Charts</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="{{ url_for('performance') }}">Performance</a>
+      </li>
+      <li class="nav-item">
+        <a class="btn btn-danger ms-2" href="{{ url_for('logout') }}">Logout</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container text-center mt-5">
+
+  <h3 class="fw-bold">Upload Road Image</h3>
+  <p class="text-secondary">Select an image for detection</p>
+
+  <form method="POST" enctype="multipart/form-data">
+    <input type="file" name="image" id="fileInput" accept="image/*"
+           class="form-control w-50 mx-auto mb-3" required>
+
+    <div id="preview"></div>
+
+    <button type="submit" class="btn btn-detect mt-3">🚦 Detect Damage</button>
+  </form>
+
+  {% if uploaded %}
+  <div class="row mt-5 g-4">
+    <div class="col-md-6">
+      <div class="card-road">
+        <h5>Original</h5>
+        <img src="{{ original }}">
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card-road">
+        <h5>Result</h5>
+        <img src="{{ result }}">
+        <a href="{{ result }}" download class="btn btn-detect mt-3">⬇ Download</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <h4>Predictions</h4>
+
+    {% for p in predictions %}
+    <div class="card-road mb-3 text-start">
+      <span class="badge-detect">{{ p.class }}</span>
+      <div class="progress mt-2">
+        <div class="progress-bar" style="width: {{ p.confidence }}%"></div>
+      </div>
+      <small>{{ p.confidence }}% confidence</small>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<script>
+// IMAGE PREVIEW
+const fileInput = document.getElementById("fileInput");
+const preview = document.getElementById("preview");
+
+fileInput.addEventListener("change", () => {
+  const file = fileInput.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.innerHTML = `<img src="${e.target.result}" width="250">`;
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// CURSOR
+const cursor = document.getElementById("cursor");
+document.addEventListener("mousemove", e => {
+cursor.style.left = e.clientX + "px";
+cursor.style.top = e.clientY + "px";
+});
+
+// GRID SYSTEM
+const canvas = document.getElementById("gridCanvas");
+const ctx = canvas.getContext("2d");
+
+let gridSize = 50;
+let trail = [];
+let waves = [];
+
+function resize(){
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+document.addEventListener("mousemove", e => {
+const x = Math.floor(e.clientX / gridSize);
+const y = Math.floor(e.clientY / gridSize);
+trail.unshift({x,y});
+if(trail.length > 15) trail.pop();
+});
+
+document.addEventListener("click", e => {
+waves.push({x:e.clientX,y:e.clientY,radius:0,alpha:0.4});
+});
+
+function draw(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+// GRID
+ctx.strokeStyle = "rgba(255,255,255,0.05)";
+for(let x=0;x<canvas.width;x+=gridSize){
+ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke();
+}
+for(let y=0;y<canvas.height;y+=gridSize){
+ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
+}
+
+// SOFT TRAIL (FIXED)
+trail.forEach((cell,i)=>{
+const alpha = 0.1 - i * 0.008;
+
+ctx.fillStyle = `rgba(250,204,21,${alpha})`;
+ctx.shadowBlur = 4;
+ctx.shadowColor = "rgba(250,204,21,0.18)";
+
+ctx.fillRect(cell.x*gridSize,cell.y*gridSize,gridSize,gridSize);
+});
+
+// WAVES
+waves.forEach((w,i)=>{
+w.radius += 2.5;
+w.alpha -= 0.01;
+
+ctx.beginPath();
+ctx.arc(w.x,w.y,w.radius,0,Math.PI*2);
+ctx.strokeStyle = `rgba(250,204,21,${w.alpha})`;
+ctx.lineWidth = 1.5;
+ctx.stroke();
+
+if(w.alpha<=0) waves.splice(i,1);
+});
+
+requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+</body>
+</html>

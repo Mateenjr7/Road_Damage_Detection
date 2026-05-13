@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoadDamage AI</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+
+<style>
+body{margin:0;font-family:'Inter',sans-serif;background:#020617;color:white;overflow-x:hidden;}
+#particles-js{position:fixed;width:100%;height:100%;z-index:-1;}
+
+.navbar{background:rgba(255,255,255,0.05);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,0.08);} 
+
+.hero{padding:140px 0;text-align:center;}
+.hero-title{font-size:3.5rem;font-weight:800;}
+.hero-subtitle{color:#94a3b8;text-transform:uppercase;font-size:0.9rem;letter-spacing:1px;}
+.hero-desc{color:#e5e7eb;font-size:1.05rem;max-width:650px;margin:0 auto;line-height:1.6;}
+
+.highlight{background:linear-gradient(90deg,#facc15,#fde047,#facc15);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradientMove 6s linear infinite;}
+@keyframes gradientMove{0%{background-position:0%}100%{background-position:200%}}
+
+/* SMOOTH AI TEXT TRANSITION */
+#dynamic-text{
+transition:opacity 0.5s ease, transform 0.5s ease;
+display:inline-block;
+}
+.fade-out{opacity:0; transform:translateY(10px);}
+.fade-in{opacity:1; transform:translateY(0);}
+
+.btn-premium{background:linear-gradient(135deg,#facc15,#fde047);color:black;border:none;border-radius:14px;padding:14px 30px;font-weight:600;transition:.3s;}
+.btn-premium:hover{transform:translateY(-3px);box-shadow:0 0 25px rgba(250,204,21,.5);} 
+
+.glass{background:rgba(255,255,255,0.05);backdrop-filter:blur(16px);border-radius:22px;padding:30px;transition:.4s;border:1px solid rgba(255,255,255,0.08);height:100%;position:relative;overflow:hidden;}
+
+/* GLOWING LINE EFFECT */
+.glass::before{
+content:"";
+position:absolute;
+top:0;
+left:-100%;
+width:100%;
+height:2px;
+background:linear-gradient(90deg,transparent,#facc15,transparent);
+animation:glowLine 3s linear infinite;
+}
+
+@keyframes glowLine{
+0%{left:-100%;}
+100%{left:100%;}
+}
+
+.glass:hover{transform:translateY(-8px);box-shadow:0 0 40px rgba(250,204,21,.2);} 
+
+.section{padding:100px 0;}
+.stat{font-size:2.5rem;font-weight:800;color:#facc15;}
+.footer{background:rgba(255,255,255,0.05);text-align:center;padding:40px;color:#aaa;margin-top:80px;}
+
+/* CURSOR GLOW */
+.cursor-glow{
+position:fixed;
+width:180px;
+height:180px;
+border-radius:50%;
+pointer-events:none;
+background:radial-gradient(circle, rgba(250,204,21,0.35) 0%, rgba(250,204,21,0.15) 40%, rgba(250,204,21,0.05) 60%, transparent 70%);
+filter:blur(20px);
+transform:translate(-50%,-50%);
+z-index:9998;
+mix-blend-mode:screen;
+}
+
+/* MOUSE FOLLOW LIGHT (subtle halo) */
+.cursor-halo{
+position:fixed;
+width:420px;
+height:420px;
+border-radius:50%;
+pointer-events:none;
+background:radial-gradient(circle, rgba(250,204,21,0.08) 0%, rgba(250,204,21,0.04) 35%, transparent 65%);
+filter:blur(40px);
+transform:translate(-50%,-50%);
+z-index:9997;
+}
+
+/* INSANE SCROLL ANIMATION HELPERS */
+.reveal{
+opacity:0;
+transform:translateY(60px) scale(0.98);
+transition:opacity 0.9s cubic-bezier(.2,.65,.2,1), transform 0.9s cubic-bezier(.2,.65,.2,1);
+will-change:transform, opacity;
+}
+.reveal.active{
+opacity:1;
+transform:translateY(0) scale(1);
+}
+
+.parallax{
+will-change:transform;
+}
+
+/* Slight section divider glow (no text change) */
+.section{
+position:relative;
+overflow:hidden;
+}
+.section::after{
+content:"";
+position:absolute;
+left:-50%;
+bottom:0;
+width:200%;
+height:1px;
+background:linear-gradient(90deg, transparent, rgba(250,204,21,0.6), transparent);
+animation:sectionLine 6s linear infinite;
+opacity:0.6;
+}
+@keyframes sectionLine{
+0%{transform:translateX(-25%);} 
+100%{transform:translateX(25%);} 
+}
+
+
+/* CURSOR INTERACTION ON HOVER */
+.interactive-hover:hover ~ .cursor-glow,
+button:hover ~ .cursor-glow,
+a:hover ~ .cursor-glow,
+.glass:hover ~ .cursor-glow{
+}
+
+/* We'll control via JS by toggling classes */
+.cursor-glow.active{
+width:260px;
+height:260px;
+background:radial-gradient(circle, rgba(250,204,21,0.45) 0%, rgba(250,204,21,0.2) 40%, transparent 70%);
+filter:blur(18px);
+}
+
+.cursor-halo.active{
+width:520px;
+height:520px;
+background:radial-gradient(circle, rgba(250,204,21,0.12) 0%, rgba(250,204,21,0.06) 35%, transparent 70%);
+filter:blur(45px);
+}
+
+
+/* RIGHT SIDE SCROLL INDICATOR */
+.scroll-indicator{
+position:fixed;
+right:10px;
+top:50%;
+transform:translateY(-50%);
+width:6px;
+height:200px;
+background:rgba(255,255,255,0.1);
+border-radius:10px;
+overflow:hidden;
+z-index:9999;
+}
+
+.scroll-progress{
+width:100%;
+height:0%;
+background:linear-gradient(180deg,#facc15,#fde047);
+box-shadow:0 0 15px rgba(250,204,21,0.7);
+transition:height 0.2s ease;
+}
+
+</style>
+</head>
+
+<body>
+<div class="scroll-indicator"><div class="scroll-progress" id="scrollProgress"></div></div>
+<div class="cursor-halo"></div>
+<div class="cursor-glow"></div>
+
+<div id="particles-js"></div>
+
+<nav class="navbar navbar-expand-lg">
+<div class="container">
+<a class="navbar-brand text-white fw-bold">🚧 Road Damage Detection</a>
+<div class="ms-auto">
+<a href="{{ url_for('login') }}" class="btn btn-outline-light me-2">Login</a>
+<a href="{{ url_for('register') }}" class="btn btn-premium">Register</a>
+</div>
+</div>
+</nav>
+
+<div class="container hero reveal parallax" data-speed="0.15">
+<p class="hero-subtitle">AI Powered Infrastructure Monitoring</p>
+<h1 class="hero-title">AI Powered <span id="dynamic-text" class="highlight fade-in">Road Analysis</span></h1>
+<p class="mt-4 hero-desc">Detect potholes, cracks, and road surface damage using advanced YOLO-based deep learning models.
+Designed for smart cities, municipalities, and automated infrastructure monitoring systems.</p>
+<a href="{{ url_for('login') }}" class="btn btn-premium mt-4">Get Started</a>
+</div>
+
+<div class="container section text-center reveal parallax" data-speed="0.08">
+<h2 class="highlight mb-5">Key Features</h2>
+<div class="row g-4">
+
+<div class="col-md-4" data-aos="zoom-in">
+<div class="glass">
+<h4>⚡ Real-Time AI Detection</h4>
+<p class="text-secondary">Performs ultra-fast inference using YOLO architecture, enabling instant detection of road damages 
+with minimal latency, ideal for live monitoring systems.</p>
+</div>
+</div>
+
+<div class="col-md-4" data-aos="zoom-in" data-aos-delay="150">
+<div class="glass">
+<h4>🎯 High Accuracy Models</h4>
+<p class="text-secondary">Trained on diverse datasets, ensuring precise classification of potholes, cracks, and surface wear 
+under different environmental conditions.</p>
+</div>
+</div>
+
+<div class="col-md-4" data-aos="zoom-in" data-aos-delay="300">
+<div class="glass">
+<h4>📤 Easy Upload System</h4>
+<p class="text-secondary">Simple and intuitive interface to upload images and instantly receive processed results with visual detection.</p>
+</div>
+</div>
+
+<div class="col-md-4" data-aos="zoom-in">
+<div class="glass">
+<h4>📊 Visual Output</h4>
+<p class="text-secondary">Displays bounding boxes with labels and confidence scores for clear understanding of detected damages.</p>
+</div>
+</div>
+
+<div class="col-md-4" data-aos="zoom-in" data-aos-delay="150">
+<div class="glass">
+<h4>☁️ Flask Backend</h4>
+<p class="text-secondary">Efficient backend handles model inference, image processing, and scalable deployment across cloud environments.</p>
+</div>
+</div>
+
+<div class="col-md-4" data-aos="zoom-in" data-aos-delay="300">
+<div class="glass">
+<h4>🌐 Smart City Integration</h4>
+<p class="text-secondary">Easily extendable for real-time CCTV feeds, automated alerts, and infrastructure maintenance systems.</p>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="container section text-center reveal parallax" data-speed="0.08">
+<h2 class="highlight mb-5">How It Works</h2>
+<div class="row g-4">
+
+<div class="col-md-3"><div class="glass"><h5>1️⃣ Upload Image</h5><p class="text-secondary">User uploads a road image via UI.</p></div></div>
+<div class="col-md-3"><div class="glass"><h5>2️⃣ Preprocessing</h5><p class="text-secondary">Image resized & normalized for model.</p></div></div>
+<div class="col-md-3"><div class="glass"><h5>3️⃣ YOLO Inference</h5><p class="text-secondary">Model detects damages using bounding boxes.</p></div></div>
+<div class="col-md-3"><div class="glass"><h5>4️⃣ Output</h5><p class="text-secondary">Annotated image with predictions displayed.</p></div></div>
+
+</div>
+</div>
+
+<div class="container section text-center reveal parallax" data-speed="0.08">
+<div class="row">
+<div class="col-md-4"><div class="stat">95%+</div><p class="text-secondary">Detection Accuracy</p></div>
+<div class="col-md-4"><div class="stat">&lt;1s</div><p class="text-secondary">Processing Time</p></div>
+<div class="col-md-4"><div class="stat">24/7</div><p class="text-secondary">AI Monitoring</p></div>
+</div>
+</div>
+
+<div class="footer">© 2026 RoadDamage AI | Flask + YOLO + AI UI</div>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>AOS.init({duration:900,once:true});</script>
+
+<script>
+tsParticles.load("particles-js",{particles:{number:{value:80},color:{value:"#facc15"},links:{enable:true,color:"#facc15",opacity:0.2},move:{enable:true,speed:1},size:{value:2},opacity:{value:0.6}},interactivity:{events:{onHover:{enable:true,mode:"repulse"}},modes:{repulse:{distance:120}}}});
+</script>
+
+<script>
+const phrases=["Road Analysis","Damage Detection","Smart Infrastructure","Pothole Recognition","AI Vision System"];
+let index=0;const el=document.getElementById("dynamic-text");
+
+setInterval(()=>{
+el.classList.remove("fade-in");
+el.classList.add("fade-out");
+
+setTimeout(()=>{
+index=(index+1)%phrases.length;
+el.textContent=phrases[index];
+el.classList.remove("fade-out");
+el.classList.add("fade-in");
+},400);
+
+},2500);
+</script>
+
+
+<script>
+// CURSOR FOLLOW
+const glow = document.querySelector('.cursor-glow');
+const halo = document.querySelector('.cursor-halo');
+
+let mouseX = window.innerWidth/2, mouseY = window.innerHeight/2;
+let gx = mouseX, gy = mouseY, hx = mouseX, hy = mouseY;
+
+window.addEventListener('mousemove', (e)=>{
+  mouseX = e.clientX; mouseY = e.clientY;
+});
+
+function lerp(a,b,n){ return (1-n)*a + n*b; }
+
+function animateCursor(){
+  gx = lerp(gx, mouseX, 0.25);
+  gy = lerp(gy, mouseY, 0.25);
+  hx = lerp(hx, mouseX, 0.12);
+  hy = lerp(hy, mouseY, 0.12);
+
+  glow.style.transform = `translate(${gx}px, ${gy}px) translate(-50%, -50%)`;
+  halo.style.transform = `translate(${hx}px, ${hy}px) translate(-50%, -50%)`;
+
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+</script>
+
+<script>
+// INSANE SCROLL REVEAL (IntersectionObserver)
+const reveals = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){ entry.target.classList.add('active'); }
+  });
+},{threshold:0.15});
+reveals.forEach(el=> io.observe(el));
+</script>
+
+<script>
+// PARALLAX ON SCROLL
+const parallaxEls = document.querySelectorAll('.parallax');
+window.addEventListener('scroll', ()=>{
+  const scrolled = window.pageYOffset;
+  parallaxEls.forEach(el=>{
+    const speed = parseFloat(el.getAttribute('data-speed')) || 0.1;
+    const y = scrolled * speed;
+    el.style.transform = `translateY(${y}px)`;
+  });
+});
+</script>
+
+
+<script>
+// CURSOR HOVER INTERACTION
+const interactiveEls = document.querySelectorAll('a, button, .glass');
+const glowEl = document.querySelector('.cursor-glow');
+const haloEl = document.querySelector('.cursor-halo');
+
+interactiveEls.forEach(el=>{
+  el.addEventListener('mouseenter', ()=>{
+    glowEl.classList.add('active');
+    haloEl.classList.add('active');
+  });
+  el.addEventListener('mouseleave', ()=>{
+    glowEl.classList.remove('active');
+    haloEl.classList.remove('active');
+  });
+});
+</script>
+
+
+<script>
+// RIGHT SIDE SCROLL ANIMATION
+window.addEventListener('scroll',()=>{
+  const scrollTop = document.documentElement.scrollTop;
+  const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const progress = (scrollTop / scrollHeight) * 100;
+  document.getElementById('scrollProgress').style.height = progress + '%';
+});
+</script>
+
+</body>
+</html>
