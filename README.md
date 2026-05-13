@@ -1,6 +1,6 @@
 # 🛣️ Road Damage Detection using YOLOv8
 
-An AI-powered computer vision system for detecting and classifying road damages such as potholes and cracks using the YOLOv8 object detection framework.
+An AI-powered computer vision system for detecting and classifying road damages such as potholes and cracks using the YOLOv10 object detection framework.
 
 This project leverages deep learning and real-world annotated datasets to automate road condition monitoring, enabling smarter infrastructure maintenance, safer transportation, and scalable urban road auditing systems.
 
@@ -15,7 +15,7 @@ This project leverages deep learning and real-world annotated datasets to automa
 ## 📌 Features
 
 - Real-time road damage detection
-- YOLOv8-based object detection pipeline
+- YOLOv10-based object detection pipeline
 - Detection of multiple road damage categories
 - Bounding box visualization
 - Training and inference support
@@ -78,7 +78,7 @@ Road Image / Video
 | Technology | Purpose |
 |---|---|
 | Python | Core Programming Language |
-| YOLOv8 | Object Detection Framework |
+| YOLOv10 | Object Detection Framework |
 | OpenCV | Image Processing |
 | PyTorch | Deep Learning Backend |
 | NumPy | Numerical Computation |
