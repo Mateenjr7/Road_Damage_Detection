@@ -59,7 +59,7 @@ Road Image / Video
  Image Preprocessing
         │
         ▼
- YOLOv8 Detection Model
+ YOLOv10 Detection Model
         │
         ▼
  Bounding Box Prediction
